@@ -5,8 +5,8 @@ package com.example.manaforge
 import com.manaforge.api.ScryfallCardDto
 import com.manaforge.data.models.*
 import com.manaforge.data.repositories.*
-import com.manaforge.domain.validators.DeckValidator
-import com.manaforge.domain.validators.ValidationResult
+import com.example.manaforge.DeckValidator
+import com.example.manaforge.ValidationResult
 import javax.inject.Inject
 
 // ─────────────────────────────────────────────
