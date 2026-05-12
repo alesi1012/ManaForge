@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.manaforge.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_home_to_newDeck"
+            app:destination="@id/deckEditorFragment" />
+        <action
+            android:id="@+id/action_home_to_deckDetail"
+            app:destination="@id/deckEditorFragment">
+            <argument
+                android:name="deckId"
+                app:argType="integer"
+                android:defaultValue="-1" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/deckEditorFragment"
+        android:name="com.example.manaforge.DeckEditorFragment"
+        android:label="Deck Editor"
+        tools:layout="@layout/fragment_deck_editor">
+        <argument
+            android:name="deck"
+            app:argType="com.manaforge.data.models.Deck"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <action
+            android:id="@+id/action_editor_to_stats"
+            app:destination="@id/statsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/statsFragment"
+        android:name="com.example.manaforge.StatsFragment"
+        android:label="Stats"
+        tools:layout="@layout/fragment_stats">
+        <argument
+            android:name="deckId"
+            app:argType="integer" />
+    </fragment>
+
+</navigation>

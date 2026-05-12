@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand -->
+    <color name="manaforge_primary">#6200EE</color>
+    <color name="manaforge_primary_variant">#3700B3</color>
+    <color name="manaforge_secondary">#03DAC6</color>
+
+    <!-- Semantic -->
+    <color name="win_green">#2E7D32</color>
+    <color name="loss_red">#C62828</color>
+    <color name="draw_yellow">#F57F17</color>
+
+    <!-- Backgrounds -->
+    <color name="surface">#FFFFFF</color>
+    <color name="background">#F5F5F5</color>
+</resources>

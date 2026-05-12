@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ManaForge" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/manaforge_primary</item>
+        <item name="colorPrimaryVariant">@color/manaforge_primary_variant</item>
+        <item name="colorSecondary">@color/manaforge_secondary</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="android:colorBackground">@color/background</item>
+    </style>
+</resources>
