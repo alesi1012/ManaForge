@@ -295,10 +295,6 @@ class DeckEditorFragment : Fragment() {
     }
 }
 
-// ─────────────────────────────────────────────
-//  Deck Cards Adapter
-// ─────────────────────────────────────────────
-
 class DeckCardsAdapter(
     private val onQuantityChange: (Int, Int) -> Unit,
     private val onRemove: (Int) -> Unit
@@ -345,10 +341,6 @@ class DeckCardsAdapter(
         }
     }
 }
-
-// ─────────────────────────────────────────────
-//  Search Results Adapter
-// ─────────────────────────────────────────────
 
 class SearchResultsAdapter(
     private val onAdd: (ScryfallCardDto) -> Unit

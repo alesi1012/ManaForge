@@ -67,7 +67,6 @@ class HomeFragment : Fragment() {
         binding.viewPagerFeatured.adapter = carouselAdapter
         binding.viewPagerFeatured.offscreenPageLimit = 3
 
-        // Page transformer for zoom effect
         binding.viewPagerFeatured.setPageTransformer { page, position ->
             val absPos = Math.abs(position)
             page.scaleY = 1f - (absPos * 0.1f)
@@ -143,10 +142,6 @@ class HomeFragment : Fragment() {
     }
 }
 
-// ─────────────────────────────────────────────
-//  Carousel Adapter (ViewPager2)
-// ─────────────────────────────────────────────
-
 class CarouselAdapter(
     private val onClick: (Deck) -> Unit
 ) : RecyclerView.Adapter<CarouselAdapter.ViewHolder>() {
@@ -187,10 +182,6 @@ class CarouselAdapter(
         }
     }
 }
-
-// ─────────────────────────────────────────────
-//  Deck List Adapter (RecyclerView)
-// ─────────────────────────────────────────────
 
 class DeckListAdapter(
     private val onClick: (Deck) -> Unit

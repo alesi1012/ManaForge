@@ -120,7 +120,6 @@ class AuthRepository @Inject constructor(
             Log.d(TAG, "restoreSession: restored from prefs, userId=$savedId")
             return
         }
-        // Fallback: look up by email if prefs are empty (e.g. fresh install after data clear)
         val authEmail = supabase.auth.currentSessionOrNull()?.user?.email
         Log.d(TAG, "restoreSession: no cached id, trying email lookup for $authEmail")
         if (authEmail == null) return

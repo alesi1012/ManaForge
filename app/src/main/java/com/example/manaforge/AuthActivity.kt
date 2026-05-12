@@ -24,10 +24,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// ─────────────────────────────────────────────
-//  ViewModel
-// ─────────────────────────────────────────────
-
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val loginUser: LoginUserUseCase,

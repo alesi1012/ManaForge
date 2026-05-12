@@ -60,12 +60,9 @@ class DeckEditorViewModel @Inject constructor(
     private val _importState = MutableStateFlow<ImportUiState>(ImportUiState.Idle)
     val importState: StateFlow<ImportUiState> = _importState
 
-    // ── Deck ops ──────────────────────────────────────────────────────────
-
     fun loadDeck(deck: Deck) {
         _deck.value = deck
         viewModelScope.launch {
-            // Load fresh deck from DB so commanderCardId is always up to date
             val freshDeck = (getDeckById(deck.id) as? Result.Success)?.data ?: deck
             _deck.value = freshDeck
             loadDeckCards(freshDeck.id)
@@ -100,8 +97,6 @@ class DeckEditorViewModel @Inject constructor(
             }
         }
     }
-
-    // ── Card ops ──────────────────────────────────────────────────────────
 
     private fun loadDeckCards(deckId: Int) {
         viewModelScope.launch {
@@ -151,8 +146,6 @@ class DeckEditorViewModel @Inject constructor(
         }
     }
 
-    // ── Commander ops ─────────────────────────────────────────────────────
-
     fun startPickingCommander() {
         _isPickingCommander.value = true
     }
@@ -163,7 +156,6 @@ class DeckEditorViewModel @Inject constructor(
 
     fun setCommander(dto: ScryfallCardDto) {
         val imageUrl = dto.resolveImageUrl()
-        // Set eagerly for immediate UI feedback
         _commander.value = Card(
             name = dto.name,
             type = dto.typeLine,
@@ -173,17 +165,14 @@ class DeckEditorViewModel @Inject constructor(
         _isPickingCommander.value = false
         val deckId = _deck.value?.id ?: return
         viewModelScope.launch {
-            // Add card to deck (caches it in Supabase if needed)
             val deckCardResult = addCardToDeck(deckId, dto, 1, isCommander = true)
             if (deckCardResult is Result.Error) {
                 _operationState.value = Result.Error(deckCardResult.message)
                 return@launch
             }
             val cardId = (deckCardResult as Result.Success).data.cardId
-            // Persist commander in decks table (this is the reliable source of truth)
             updateCommanderCardId(deckId, cardId)
             imageUrl?.let { updateDeckCoverImage(deckId, it) }
-            // Fetch full card and update local state
             val cardResult = getCardById(cardId)
             if (cardResult is Result.Success) {
                 _commander.value = cardResult.data
@@ -192,8 +181,6 @@ class DeckEditorViewModel @Inject constructor(
             loadDeckCards(deckId)
         }
     }
-
-    // ── Import ────────────────────────────────────────────────────────────────
 
     fun importFromText(text: String) {
         val deckId = _deck.value?.id ?: return
@@ -235,8 +222,6 @@ class DeckEditorViewModel @Inject constructor(
                     Pair(it.groupValues[1].toInt(), it.groupValues[2].trim())
                 }
             }
-
-    // ── Validation ────────────────────────────────────────────────────────
 
     fun validateCurrentDeck() {
         val deck = _deck.value ?: return

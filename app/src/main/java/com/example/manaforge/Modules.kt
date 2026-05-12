@@ -10,10 +10,6 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-// ─────────────────────────────────────────────
-//  User
-// ─────────────────────────────────────────────
-
 @Serializable
 data class User(
     val id: Int = 0,
@@ -22,10 +18,6 @@ data class User(
     @SerialName("password_hash") val passwordHash: String = "",
     @SerialName("created_at") val createdAt: String = ""
 )
-
-// ─────────────────────────────────────────────
-//  Deck
-// ─────────────────────────────────────────────
 
 @Parcelize
 data class Deck(
@@ -84,10 +76,6 @@ enum class DeckFormat(val value: String) : Parcelable {
     }
 }
 
-// ─────────────────────────────────────────────
-//  Card  (Supabase cache)
-// ─────────────────────────────────────────────
-
 @Serializable
 data class Card(
     val id: Int = 0,
@@ -105,10 +93,6 @@ data class Card(
     @SerialName("scryfall_id") val scryfallId: String? = null
 )
 
-// ─────────────────────────────────────────────
-//  DeckCard  (pivot)
-// ─────────────────────────────────────────────
-
 @Serializable
 data class DeckCard(
     val id: Int = 0,
@@ -125,10 +109,6 @@ data class DeckCardWithDetails(
     val quantity: Int get() = deckCard.quantity
 }
 
-// ─────────────────────────────────────────────
-//  DeckStats
-// ─────────────────────────────────────────────
-
 @Serializable
 data class DeckStats(
     @SerialName("deck_id") val deckId: Int = 0,
@@ -142,10 +122,6 @@ data class DeckStats(
     val winRate: Float
         get() = if (totalMatches > 0) wins.toFloat() / totalMatches else 0f
 }
-
-// ─────────────────────────────────────────────
-//  Match
-// ─────────────────────────────────────────────
 
 @Serializable
 data class Match(
@@ -171,10 +147,6 @@ enum class GameResult(val value: String) {
             entries.firstOrNull { it.value == value } ?: LOSS
     }
 }
-
-// ─────────────────────────────────────────────
-//  UI state wrapper
-// ─────────────────────────────────────────────
 
 sealed class Result<out T> {
     data class Success<T>(val data: T) : Result<T>()

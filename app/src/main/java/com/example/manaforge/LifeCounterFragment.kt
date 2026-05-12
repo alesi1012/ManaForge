@@ -19,10 +19,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// ─────────────────────────────────────────────
-//  ViewModel
-// ─────────────────────────────────────────────
-
 @HiltViewModel
 class LifeCounterViewModel @Inject constructor() : ViewModel() {
 
@@ -56,10 +52,6 @@ class LifeCounterViewModel @Inject constructor() : ViewModel() {
         _lives.value = listOf(life, life, life, life)
     }
 }
-
-// ─────────────────────────────────────────────
-//  Fragment
-// ─────────────────────────────────────────────
 
 @AndroidEntryPoint
 class LifeCounterFragment : Fragment() {
@@ -160,7 +152,6 @@ class LifeCounterFragment : Fragment() {
             setPadding(64, 32, 64, 16)
         }
 
-        // Player count section
         container.addView(TextView(ctx).apply {
             text = "Players"
             textSize = 15f
@@ -176,7 +167,6 @@ class LifeCounterFragment : Fragment() {
         }
         container.addView(radioPlayers)
 
-        // Starting life section
         container.addView(TextView(ctx).apply {
             text = "Starting Life"
             textSize = 15f

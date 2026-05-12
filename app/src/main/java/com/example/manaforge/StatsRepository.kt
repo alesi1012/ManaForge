@@ -36,10 +36,6 @@ class StatsRepository @Inject constructor(
             }
         }
 
-    /**
-     * Atomically updates [deck_stats] after a match is registered.
-     * Uses a raw RPC call so the increment is safe from race conditions.
-     */
     suspend fun updateAfterMatch(
         deckId: Int,
         result: GameResult,
@@ -47,7 +43,6 @@ class StatsRepository @Inject constructor(
         damageTaken: Int
     ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            // Read current stats
             val current = supabase.postgrest["deck_stats"]
                 .select(Columns.ALL) { filter { eq("deck_id", deckId) } }
                 .decodeSingle<DeckStats>()
@@ -77,10 +72,6 @@ class StatsRepository @Inject constructor(
     }
 }
 
-// ─────────────────────────────────────────────
-//  Match Repository
-// ─────────────────────────────────────────────
-
 @Singleton
 class MatchRepository @Inject constructor(
     private val supabase: SupabaseClient,
@@ -94,7 +85,6 @@ class MatchRepository @Inject constructor(
                     .insert(match)
                     .decodeSingle<Match>()
 
-                // Update aggregate stats
                 statsRepository.updateAfterMatch(
                     deckId      = match.deckId,
                     result      = GameResult.from(match.result),

@@ -23,8 +23,6 @@ class DeckRepository @Inject constructor(
     private val supabase: SupabaseClient
 ) {
 
-    // ── Create ────────────────────────────────────────────────────────────
-
     suspend fun createDeck(
         userId: Int,
         name: String,
@@ -40,7 +38,6 @@ class DeckRepository @Inject constructor(
                 .decodeSingle<DeckDto>()
                 .toDeck()
 
-            // Initialise deck_stats row
             supabase.postgrest["deck_stats"].insert(
                 buildJsonObject { put("deck_id", created.id) }
             )
@@ -50,8 +47,6 @@ class DeckRepository @Inject constructor(
             Result.Error("Could not create deck: ${e.message}", e)
         }
     }
-
-    // ── Read – all decks for a user ────────────────────────────────────────
 
     suspend fun getDecksByUser(userId: Int): Result<List<Deck>> =
         withContext(Dispatchers.IO) {
@@ -72,8 +67,6 @@ class DeckRepository @Inject constructor(
             }
         }
 
-    // ── Read – featured decks for carousel (all users, top 10) ────────────
-
     suspend fun getFeaturedDecks(): Result<List<Deck>> =
         withContext(Dispatchers.IO) {
             try {
@@ -90,8 +83,6 @@ class DeckRepository @Inject constructor(
             }
         }
 
-    // ── Read – single deck ────────────────────────────────────────────────
-
     suspend fun getDeckById(deckId: Int): Result<Deck> =
         withContext(Dispatchers.IO) {
             try {
@@ -106,8 +97,6 @@ class DeckRepository @Inject constructor(
                 Result.Error("Deck not found: ${e.message}", e)
             }
         }
-
-    // ── Update ────────────────────────────────────────────────────────────
 
     suspend fun updateDeck(deckId: Int, name: String, format: DeckFormat): Result<Deck> =
         withContext(Dispatchers.IO) {
@@ -129,8 +118,6 @@ class DeckRepository @Inject constructor(
                 Result.Error("Could not update deck: ${e.message}", e)
             }
         }
-
-    // ── Update cover image + commander ────────────────────────────────────
 
     suspend fun updateCoverImage(deckId: Int, imageUrl: String): Result<Unit> =
         withContext(Dispatchers.IO) {
@@ -157,8 +144,6 @@ class DeckRepository @Inject constructor(
                 Result.Error("Could not save commander: ${e.message}", e)
             }
         }
-
-    // ── Delete ────────────────────────────────────────────────────────────
 
     suspend fun deleteDeck(deckId: Int): Result<Unit> =
         withContext(Dispatchers.IO) {
