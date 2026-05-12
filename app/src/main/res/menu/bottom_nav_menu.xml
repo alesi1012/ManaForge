@@ -5,9 +5,9 @@
         android:icon="@android:drawable/ic_menu_gallery"
         android:title="Home" />
     <item
-        android:id="@+id/deckEditorFragment"
-        android:icon="@android:drawable/ic_menu_edit"
-        android:title="Editor" />
+        android:id="@+id/newDeckFragment"
+        android:icon="@android:drawable/ic_input_add"
+        android:title="New Deck" />
     <item
         android:id="@+id/statsFragment"
         android:icon="@android:drawable/ic_menu_info_details"

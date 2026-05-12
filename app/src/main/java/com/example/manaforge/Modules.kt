@@ -42,7 +42,7 @@ data class DeckDto(
     val id: Int = 0,
     @SerialName("user_id") val userId: Int = 0,
     val name: String = "",
-    val format: String = "standard",
+    val format: String? = null,
     @SerialName("created_at") val createdAt: String = "",
     @SerialName("updated_at") val updatedAt: String = ""
 ) {
@@ -50,7 +50,7 @@ data class DeckDto(
         id = id,
         userId = userId,
         name = name,
-        format = DeckFormat.from(format),
+        format = DeckFormat.from(format ?: "standard"),
         createdAt = createdAt,
         updatedAt = updatedAt
     )
@@ -72,7 +72,7 @@ enum class DeckFormat(val value: String) : Parcelable {
 
     companion object {
         fun from(value: String): DeckFormat =
-            entries.firstOrNull { it.value == value } ?: STANDARD
+            entries.firstOrNull { it.value.equals(value, ignoreCase = true) } ?: STANDARD
     }
 }
 
@@ -106,7 +106,8 @@ data class DeckCard(
     val id: Int = 0,
     @SerialName("deck_id") val deckId: Int = 0,
     @SerialName("card_id") val cardId: Int = 0,
-    val quantity: Int = 1
+    val quantity: Int = 1,
+    @SerialName("is_commander") val isCommander: Boolean = false
 )
 
 data class DeckCardWithDetails(

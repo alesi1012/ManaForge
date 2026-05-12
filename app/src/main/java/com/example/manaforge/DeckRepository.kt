@@ -28,10 +28,14 @@ class DeckRepository @Inject constructor(
         format: DeckFormat
     ): Result<Deck> = withContext(Dispatchers.IO) {
         try {
-            val deck = Deck(userId = userId, name = name, format = format)
             val created = supabase.postgrest["decks"]
-                .insert(deck)
-                .decodeSingle<Deck>()
+                .insert(buildJsonObject {
+                    put("user_id", userId)
+                    put("name", name)
+                    put("format", format.value)
+                })
+                .decodeSingle<DeckDto>()
+                .toDeck()
 
             // Initialise deck_stats row
             supabase.postgrest["deck_stats"].insert(
@@ -54,7 +58,8 @@ class DeckRepository @Inject constructor(
                         filter { eq("user_id", userId) }
                         order("updated_at", Order.DESCENDING)
                     }
-                    .decodeList<Deck>()
+                    .decodeList<DeckDto>()
+                    .map { it.toDeck() }
                 Result.Success(decks)
             } catch (e: Exception) {
                 Result.Error("Could not load decks: ${e.message}", e)
@@ -71,7 +76,8 @@ class DeckRepository @Inject constructor(
                         order("updated_at", Order.DESCENDING)
                         limit(10)
                     }
-                    .decodeList<Deck>()
+                    .decodeList<DeckDto>()
+                    .map { it.toDeck() }
                 Result.Success(decks)
             } catch (e: Exception) {
                 Result.Error("Could not load featured decks: ${e.message}", e)
@@ -87,7 +93,8 @@ class DeckRepository @Inject constructor(
                     .select(Columns.ALL) {
                         filter { eq("id", deckId) }
                     }
-                    .decodeSingle<Deck>()
+                    .decodeSingle<DeckDto>()
+                    .toDeck()
                 Result.Success(deck)
             } catch (e: Exception) {
                 Result.Error("Deck not found: ${e.message}", e)
@@ -106,9 +113,11 @@ class DeckRepository @Inject constructor(
                             put("format", format.value)
                         }
                     ) {
+                        select()
                         filter { eq("id", deckId) }
                     }
-                    .decodeSingle<Deck>()
+                    .decodeSingle<DeckDto>()
+                    .toDeck()
                 Result.Success(updated)
             } catch (e: Exception) {
                 Result.Error("Could not update deck: ${e.message}", e)

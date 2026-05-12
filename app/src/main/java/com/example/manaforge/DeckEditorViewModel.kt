@@ -3,8 +3,7 @@ package com.example.manaforge
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.manaforge.Api.ScryfallCardDto
-import com.example.manaforge.*
-import com.example.manaforge.*
+import com.example.manaforge.Api.resolveImageUrl
 import com.example.manaforge.ValidationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +19,8 @@ class DeckEditorViewModel @Inject constructor(
     private val getDeckCards: GetDeckCardsUseCase,
     private val searchCards: SearchCardsUseCase,
     private val addCardToDeck: AddCardToDeckUseCase,
-    private val removeCard: RemoveCardFromDeckUseCase,
-    private val updateQuantity: UpdateCardQuantityUseCase,
+    private val removeCardUseCase: RemoveCardFromDeckUseCase,
+    private val updateQuantityUseCase: UpdateCardQuantityUseCase,
     private val validateDeck: ValidateDeckUseCase
 ) : ViewModel() {
 
@@ -40,22 +39,13 @@ class DeckEditorViewModel @Inject constructor(
     private val _operationState = MutableStateFlow<Result<Unit>?>(null)
     val operationState: StateFlow<Result<Unit>?> = _operationState
 
-    // ── Deck ops ──────────────────────────────────────────────────────────
+    private val _commander = MutableStateFlow<Card?>(null)
+    val commander: StateFlow<Card?> = _commander
 
-    fun createNewDeck(userId: Int, name: String, format: DeckFormat) {
-        viewModelScope.launch {
-            _operationState.value = Result.Loading
-            when (val r = createDeck(userId, name, format)) {
-                is Result.Success -> {
-                    _deck.value = r.data
-                    _operationState.value = Result.Success(Unit)
-                    loadDeckCards(r.data.id)
-                }
-                is Result.Error -> _operationState.value = Result.Error(r.message)
-                else -> Unit
-            }
-        }
-    }
+    private val _isPickingCommander = MutableStateFlow(false)
+    val isPickingCommander: StateFlow<Boolean> = _isPickingCommander
+
+    // ── Deck ops ──────────────────────────────────────────────────────────
 
     fun loadDeck(deck: Deck) {
         _deck.value = deck
@@ -92,33 +82,37 @@ class DeckEditorViewModel @Inject constructor(
     private fun loadDeckCards(deckId: Int) {
         viewModelScope.launch {
             _deckCards.value = Result.Loading
-            _deckCards.value = getDeckCards(deckId)
+            val result = getDeckCards(deckId)
+            _deckCards.value = result
+            if (result is Result.Success) {
+                val commanderEntry = result.data.firstOrNull { it.deckCard.isCommander }
+                if (commanderEntry != null) _commander.value = commanderEntry.card
+            }
         }
     }
 
-    fun searchScryfall(query: String) {
+    fun searchScryfall(query: String, commanderMode: Boolean = false) {
         if (query.length < 2) return
         viewModelScope.launch {
             _searchResults.value = Result.Loading
-            _searchResults.value = searchCards(query)
+            val q = if (commanderMode) "is:commander $query" else query
+            _searchResults.value = searchCards(q)
         }
     }
 
-    fun addCard(dto: ScryfallCardDto, quantity: Int = 1) {
+    fun addCard(dto: ScryfallCardDto, quantity: Int = 1, isCommander: Boolean = false) {
         val deckId = _deck.value?.id ?: return
         viewModelScope.launch {
-            when (val r = addCardToDeck(deckId, dto, quantity)) {
-                is Result.Success -> loadDeckCards(deckId)
-                is Result.Error -> _operationState.value = Result.Error(r.message)
-                else -> Unit
-            }
+            val r = addCardToDeck(deckId, dto, quantity, isCommander)
+            if (r is Result.Error) _operationState.value = Result.Error(r.message)
+            loadDeckCards(deckId)
         }
     }
 
     fun removeCard(deckCardId: Int) {
         val deckId = _deck.value?.id ?: return
         viewModelScope.launch {
-            removeCard(deckCardId)
+            removeCardUseCase(deckCardId)
             loadDeckCards(deckId)
         }
     }
@@ -126,9 +120,30 @@ class DeckEditorViewModel @Inject constructor(
     fun updateQuantity(deckCardId: Int, quantity: Int) {
         val deckId = _deck.value?.id ?: return
         viewModelScope.launch {
-            updateQuantity(deckCardId, quantity)
+            updateQuantityUseCase(deckCardId, quantity)
             loadDeckCards(deckId)
         }
+    }
+
+    // ── Commander ops ─────────────────────────────────────────────────────
+
+    fun startPickingCommander() {
+        _isPickingCommander.value = true
+    }
+
+    fun cancelPickingCommander() {
+        _isPickingCommander.value = false
+    }
+
+    fun setCommander(dto: ScryfallCardDto) {
+        _commander.value = Card(
+            name = dto.name,
+            type = dto.typeLine,
+            manaCost = dto.manaCost,
+            imageUrl = dto.resolveImageUrl()
+        )
+        _isPickingCommander.value = false
+        addCard(dto, 1, isCommander = true)
     }
 
     // ── Validation ────────────────────────────────────────────────────────

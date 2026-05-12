@@ -12,14 +12,27 @@
         tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_home_to_newDeck"
-            app:destination="@id/deckEditorFragment" />
+            app:destination="@id/newDeckFragment" />
         <action
             android:id="@+id/action_home_to_deckDetail"
             app:destination="@id/deckEditorFragment">
             <argument
-                android:name="deckId"
-                app:argType="integer"
-                android:defaultValue="-1" />
+                android:name="deck"
+                app:argType="com.example.manaforge.Deck" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/newDeckFragment"
+        android:name="com.example.manaforge.NewDeckFragment"
+        android:label="New Deck"
+        tools:layout="@layout/fragment_new_deck">
+        <action
+            android:id="@+id/action_newDeck_to_editor"
+            app:destination="@id/deckEditorFragment">
+            <argument
+                android:name="deck"
+                app:argType="com.example.manaforge.Deck" />
         </action>
     </fragment>
 
@@ -32,7 +45,7 @@
             android:name="deck"
             app:argType="com.example.manaforge.Deck"
             app:nullable="true"
-            android:defaultValue="@null"/>
+            android:defaultValue="@null" />
         <action
             android:id="@+id/action_editor_to_stats"
             app:destination="@id/statsFragment" />
@@ -45,7 +58,8 @@
         tools:layout="@layout/fragment_stats">
         <argument
             android:name="deckId"
-            app:argType="integer" />
+            app:argType="integer"
+            android:defaultValue="-1" />
     </fragment>
 
 </navigation>

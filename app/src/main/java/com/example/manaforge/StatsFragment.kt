@@ -105,6 +105,10 @@ class StatsFragment : Fragment() {
 
         binding.btnLogMatch.setOnClickListener { showLogMatchDialog() }
 
+        if (args.deckId == -1) {
+            binding.btnLogMatch.isEnabled = false
+            return
+        }
         observeState()
         viewModel.load(args.deckId)
     }

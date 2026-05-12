@@ -61,14 +61,13 @@ class AddCardToDeckUseCase @Inject constructor(
     suspend operator fun invoke(
         deckId: Int,
         dto: ScryfallCardDto,
-        quantity: Int = 1
+        quantity: Int = 1,
+        isCommander: Boolean = false
     ): Result<DeckCard> {
-
         val cardResult = cardRepo.getOrInsertCard(dto)
         if (cardResult is Result.Error) return cardResult
-
         val card = (cardResult as Result.Success).data
-        return cardRepo.addCardToDeck(deckId, card.id, quantity)
+        return cardRepo.addCardToDeck(deckId, card.id, quantity, isCommander)
     }
 }
 

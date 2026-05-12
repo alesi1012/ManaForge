@@ -57,7 +57,7 @@ class HomeFragment : Fragment() {
 
     private fun setupCarousel() {
         carouselAdapter = CarouselAdapter { deck ->
-            val action = HomeFragmentDirections.actionHomeToDeckDetail(deck.id)
+            val action = HomeFragmentDirections.actionHomeToDeckDetail(deck)
             findNavController().navigate(action)
         }
         binding.viewPagerFeatured.adapter = carouselAdapter
@@ -75,7 +75,7 @@ class HomeFragment : Fragment() {
 
     private fun setupDeckList() {
         deckListAdapter = DeckListAdapter { deck ->
-            val action = HomeFragmentDirections.actionHomeToDeckDetail(deck.id)
+            val action = HomeFragmentDirections.actionHomeToDeckDetail(deck)
             findNavController().navigate(action)
         }
         binding.recyclerMyDecks.apply {

@@ -5,9 +5,11 @@ import com.example.manaforge.User
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.security.MessageDigest
 import javax.inject.Inject
@@ -72,6 +74,10 @@ class AuthRepository @Inject constructor(
         } catch (e: Exception) {
             Result.Error("Logout failed: ${e.message}", e)
         }
+    }
+
+    suspend fun awaitReady() {
+        supabase.auth.sessionStatus.first { it !is SessionStatus.Initializing }
     }
 
     fun isLoggedIn(): Boolean =

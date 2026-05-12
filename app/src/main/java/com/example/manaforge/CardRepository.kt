@@ -2,7 +2,8 @@ package com.example.manaforge
 
 import com.example.manaforge.Api.ScryfallApi
 import com.example.manaforge.Api.ScryfallCardDto
-import com.example.manaforge.toCard
+import com.example.manaforge.Api.resolveArtCropUrl
+import com.example.manaforge.Api.resolveImageUrl
 import com.example.manaforge.Card
 import com.example.manaforge.DeckCard
 import com.example.manaforge.DeckCardWithDetails
@@ -42,11 +43,38 @@ class CardRepository @Inject constructor(
                     }
                     .decodeList<Card>()
 
-                if (existing.isNotEmpty()) return@withContext Result.Success(existing.first())
+                if (existing.isNotEmpty()) {
+                    val card = existing.first()
+                    val resolvedUrl = dto.resolveImageUrl()
+                    if (card.imageUrl == null && resolvedUrl != null) {
+                        try {
+                            supabase.postgrest["cards"]
+                                .update(buildJsonObject { put("image_url", resolvedUrl) }) {
+                                    filter { eq("id", card.id) }
+                                }
+                        } catch (_: Exception) { }
+                        return@withContext Result.Success(card.copy(imageUrl = resolvedUrl))
+                    }
+                    return@withContext Result.Success(card)
+                }
 
-                val card = dto.toCard()
                 val inserted = supabase.postgrest["cards"]
-                    .insert(card)
+                    .insert(buildJsonObject {
+                        put("name", dto.name)
+                        dto.typeLine?.let { put("type", it) }
+                        dto.manaCost?.let { put("mana_cost", it) }
+                        dto.colors?.joinToString(",")?.let { put("colors", it) }
+                        dto.oracleText?.let { put("text", it) }
+                        dto.power?.let { put("power", it) }
+                        dto.toughness?.let { put("toughness", it) }
+                        dto.rarity?.let { put("rarity", it) }
+                        dto.setName?.let { put("set_name", it) }
+                        dto.resolveImageUrl()?.let { put("image_url", it) }
+                        dto.resolveArtCropUrl()?.let { put("art_crop_url", it) }
+                        put("scryfall_id", dto.id)
+                    }) {
+                        select()
+                    }
                     .decodeSingle<Card>()
 
                 Result.Success(inserted)
@@ -75,7 +103,12 @@ class CardRepository @Inject constructor(
             }
         }
 
-    suspend fun addCardToDeck(deckId: Int, cardId: Int, quantity: Int = 1): Result<DeckCard> =
+    suspend fun addCardToDeck(
+        deckId: Int,
+        cardId: Int,
+        quantity: Int = 1,
+        isCommander: Boolean = false
+    ): Result<DeckCard> =
         withContext(Dispatchers.IO) {
             try {
                 val existing = supabase.postgrest["deck_cards"]
@@ -89,13 +122,33 @@ class CardRepository @Inject constructor(
                     .decodeList<DeckCard>()
 
                 if (existing.isNotEmpty()) {
-                    val newQty = existing.first().quantity + quantity
-                    return@withContext updateCardQuantity(existing.first().id, newQty)
+                    val dc = existing.first()
+                    val newQty = dc.quantity + quantity
+                    if (isCommander && !dc.isCommander) {
+                        val updated = supabase.postgrest["deck_cards"]
+                            .update(buildJsonObject {
+                                put("quantity", newQty)
+                                put("is_commander", true)
+                            }) {
+                                select()
+                                filter { eq("id", dc.id) }
+                            }
+                            .decodeSingle<DeckCard>()
+                        touchDeckTimestamp(deckId)
+                        return@withContext Result.Success(updated)
+                    }
+                    return@withContext updateCardQuantity(dc.id, newQty)
                 }
 
-                val deckCard = DeckCard(deckId = deckId, cardId = cardId, quantity = quantity)
                 val inserted = supabase.postgrest["deck_cards"]
-                    .insert(deckCard)
+                    .insert(buildJsonObject {
+                        put("deck_id", deckId)
+                        put("card_id", cardId)
+                        put("quantity", quantity)
+                        if (isCommander) put("is_commander", true)
+                    }) {
+                        select()
+                    }
                     .decodeSingle<DeckCard>()
 
                 touchDeckTimestamp(deckId)

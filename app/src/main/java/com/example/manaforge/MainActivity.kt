@@ -3,6 +3,7 @@ package com.example.manaforge
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.manaforge.R
@@ -10,6 +11,7 @@ import com.example.manaforge.AuthRepository
 import com.example.manaforge.databinding.ActivityMainBinding
 import com.example.manaforge.AuthActivity
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -22,21 +24,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Redirect to auth if not logged in
-        if (!authRepository.isLoggedIn()) {
-            startActivity(Intent(this, AuthActivity::class.java))
-            finish()
-            return
-        }
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.navHostFragment) as NavHostFragment
-        val navController = navHostFragment.navController
-
-        binding.bottomNavigation.setupWithNavController(navController)
+        lifecycleScope.launch {
+            authRepository.awaitReady()
+            if (!authRepository.isLoggedIn()) {
+                startActivity(Intent(this@MainActivity, AuthActivity::class.java))
+                finish()
+                return@launch
+            }
+            val navHostFragment = supportFragmentManager
+                .findFragmentById(R.id.navHostFragment) as NavHostFragment
+            binding.bottomNavigation.setupWithNavController(navHostFragment.navController)
+        }
     }
 }
