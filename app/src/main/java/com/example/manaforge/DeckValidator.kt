@@ -70,14 +70,20 @@ object DeckValidator {
             errors += "A Commander deck must have exactly 100 cards (currently $totalCards)."
         }
 
-        // Find commander (legendary creature marked as commander)
-        val commanders = cards.filter { it.card.type?.contains("Legendary Creature") == true }
+        // Only cards explicitly marked as commander count as the commander
+        val commanders = cards.filter { it.deckCard.isCommander }
         if (commanders.isEmpty()) {
-            errors += "The deck has no Legendary Creature to serve as commander."
-        }
-        if (commanders.size > 1) {
-            // Allowed only for partner commanders – simplified check
-            errors += "Only 1 commander is allowed (unless they have Partner). Found ${commanders.size} Legendary Creatures."
+            errors += "No commander assigned. Use 'Set Commander' in the deck editor."
+        } else {
+            // Validate that assigned commander(s) are actually Legendary Creatures
+            commanders.forEach { entry ->
+                if (entry.card.type?.contains("Legendary Creature") != true) {
+                    errors += "'${entry.card.name}' is set as commander but is not a Legendary Creature."
+                }
+            }
+            if (commanders.size > 2) {
+                errors += "Only 1 commander is allowed (2 if both have Partner). Found ${commanders.size}."
+            }
         }
 
         // No duplicates (except basic lands)
@@ -88,10 +94,10 @@ object DeckValidator {
             }
         }
 
-        // Color identity check
+        // Color identity check against the actual commander(s)
         if (commanders.isNotEmpty()) {
             val commanderColors = commanders.flatMap { parseColors(it.card) }.toSet()
-            cards.forEach { entry ->
+            cards.filter { !it.deckCard.isCommander }.forEach { entry ->
                 val cardColors = parseColors(entry.card).toSet()
                 if (!commanderColors.containsAll(cardColors)) {
                     errors += "'${entry.card.name}' contains colors outside the commander's color identity."

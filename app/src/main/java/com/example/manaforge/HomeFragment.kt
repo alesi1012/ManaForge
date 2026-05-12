@@ -48,7 +48,7 @@ class HomeFragment : Fragment() {
         observeState()
 
         viewModel.loadFeaturedDecks()
-        viewModel.loadUserDecks(userId = 1)
+        viewModel.loadUserDecks()
 
         binding.fabNewDeck.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_newDeck)
@@ -110,6 +110,9 @@ class HomeFragment : Fragment() {
                     }
                     is Result.Error -> {
                         binding.progressCarousel.visibility = View.GONE
+                        com.google.android.material.snackbar.Snackbar
+                            .make(binding.root, "Could not load featured decks", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                            .show()
                     }
                 }
             }
@@ -125,6 +128,9 @@ class HomeFragment : Fragment() {
                     }
                     is Result.Error -> {
                         binding.progressDecks.visibility = View.GONE
+                        com.google.android.material.snackbar.Snackbar
+                            .make(binding.root, "Could not load your decks: ${result.message}", com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+                            .show()
                     }
                 }
             }
@@ -218,7 +224,7 @@ class DeckListAdapter(
         fun bind(deck: Deck) {
             tvName.text = deck.name
             tvFormat.text = deck.format.value.replaceFirstChar { it.uppercase() }
-            tvUpdated.text = "Updated: ${deck.updatedAt.take(10)}"
+            tvUpdated.text = if (deck.updatedAt.isNotEmpty()) "Updated: ${deck.updatedAt.take(10)}" else ""
             if (deck.coverImageUrl != null) {
                 imgCover.load(deck.coverImageUrl) { crossfade(true) }
             } else {

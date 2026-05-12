@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
                 finish()
                 return@launch
             }
+            authRepository.restoreSession()
             val navHostFragment = supportFragmentManager
                 .findFragmentById(R.id.navHostFragment) as NavHostFragment
             binding.bottomNavigation.setupWithNavController(navHostFragment.navController)

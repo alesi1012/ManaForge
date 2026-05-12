@@ -46,20 +46,12 @@
             app:argType="com.example.manaforge.Deck"
             app:nullable="true"
             android:defaultValue="@null" />
-        <action
-            android:id="@+id/action_editor_to_stats"
-            app:destination="@id/statsFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/statsFragment"
-        android:name="com.example.manaforge.StatsFragment"
-        android:label="Stats"
-        tools:layout="@layout/fragment_stats">
-        <argument
-            android:name="deckId"
-            app:argType="integer"
-            android:defaultValue="-1" />
-    </fragment>
+        android:id="@+id/lifeCounterFragment"
+        android:name="com.example.manaforge.LifeCounterFragment"
+        android:label="Counter"
+        tools:layout="@layout/fragment_life_counter" />
 
 </navigation>

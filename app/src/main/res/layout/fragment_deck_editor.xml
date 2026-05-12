@@ -210,6 +210,14 @@
             android:background="?attr/colorSurface">
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnImportDeck"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Import"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDeleteDeck"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"

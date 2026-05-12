@@ -34,6 +34,15 @@ class CardRepository @Inject constructor(
             }
         }
 
+    suspend fun getCardDtoByExactName(name: String): Result<ScryfallCardDto> =
+        withContext(Dispatchers.IO) {
+            try {
+                Result.Success(scryfallApi.getCardByName(name))
+            } catch (e: Exception) {
+                Result.Error("Not found: $name", e)
+            }
+        }
+
     suspend fun getOrInsertCard(dto: ScryfallCardDto): Result<Card> =
         withContext(Dispatchers.IO) {
             try {
@@ -124,28 +133,28 @@ class CardRepository @Inject constructor(
                 val result: DeckCard = if (existing.isNotEmpty()) {
                     val dc = existing.first()
                     val newQty = dc.quantity + quantity
-                    updateCardQuantity(dc.id, newQty)
-                    dc.copy(quantity = newQty)
+                    supabase.postgrest["deck_cards"]
+                        .update(buildJsonObject {
+                            put("quantity", newQty)
+                            if (isCommander) put("is_commander", true)
+                        }) {
+                            filter { eq("id", dc.id) }
+                        }
+                    dc.copy(
+                        quantity = newQty,
+                        isCommander = if (isCommander) true else dc.isCommander
+                    )
                 } else {
                     val inserted = supabase.postgrest["deck_cards"]
                         .insert(buildJsonObject {
                             put("deck_id", deckId)
                             put("card_id", cardId)
                             put("quantity", quantity)
+                            put("is_commander", isCommander)
                         }) { select() }
                         .decodeSingle<DeckCard>()
                     touchDeckTimestamp(deckId)
                     inserted
-                }
-
-                // Mark as commander if needed — best-effort, column may not exist yet
-                if (isCommander) {
-                    try {
-                        supabase.postgrest["deck_cards"]
-                            .update(buildJsonObject { put("is_commander", true) }) {
-                                filter { eq("id", result.id) }
-                            }
-                    } catch (_: Exception) { }
                 }
 
                 Result.Success(result)
@@ -157,13 +166,11 @@ class CardRepository @Inject constructor(
     suspend fun updateCardQuantity(deckCardId: Int, quantity: Int): Result<DeckCard> =
         withContext(Dispatchers.IO) {
             try {
-                val updated = supabase.postgrest["deck_cards"]
+                supabase.postgrest["deck_cards"]
                     .update(buildJsonObject { put("quantity", quantity) }) {
-                        select()
                         filter { eq("id", deckCardId) }
                     }
-                    .decodeSingle<DeckCard>()
-                Result.Success(updated)
+                Result.Success(DeckCard(id = deckCardId, quantity = quantity))
             } catch (e: Exception) {
                 Result.Error("Could not update quantity: ${e.message}", e)
             }
@@ -195,8 +202,9 @@ class CardRepository @Inject constructor(
 
     private suspend fun touchDeckTimestamp(deckId: Int) {
         try {
+            val now = java.time.Instant.now().toString()
             supabase.postgrest["decks"]
-                .update(buildJsonObject { put("updated_at", "now()") }) {
+                .update(buildJsonObject { put("updated_at", now) }) {
                     filter { eq("id", deckId) }
                 }
         } catch (_: Exception) { }

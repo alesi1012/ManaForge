@@ -59,6 +59,11 @@ class GetCardByIdUseCase @Inject constructor(private val repo: CardRepository) {
         repo.getCardById(cardId)
 }
 
+class GetDeckByIdUseCase @Inject constructor(private val repo: DeckRepository) {
+    suspend operator fun invoke(deckId: Int): Result<Deck> =
+        repo.getDeckById(deckId)
+}
+
 class DeleteDeckUseCase @Inject constructor(private val repo: DeckRepository) {
     suspend operator fun invoke(deckId: Int): Result<Unit> = repo.deleteDeck(deckId)
 }
@@ -68,6 +73,11 @@ class DeleteDeckUseCase @Inject constructor(private val repo: DeckRepository) {
 class SearchCardsUseCase @Inject constructor(private val repo: CardRepository) {
     suspend operator fun invoke(query: String): Result<List<ScryfallCardDto>> =
         repo.searchScryfall(query)
+}
+
+class GetCardDtoByNameUseCase @Inject constructor(private val repo: CardRepository) {
+    suspend operator fun invoke(name: String): Result<ScryfallCardDto> =
+        repo.getCardDtoByExactName(name)
 }
 
 class AddCardToDeckUseCase @Inject constructor(

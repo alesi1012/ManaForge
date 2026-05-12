@@ -6,10 +6,17 @@ import com.example.manaforge.Api.ScryfallCardDto
 import com.example.manaforge.Api.resolveImageUrl
 import com.example.manaforge.ValidationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+sealed class ImportUiState {
+    object Idle : ImportUiState()
+    data class InProgress(val current: Int, val total: Int) : ImportUiState()
+    data class Complete(val imported: Int, val skipped: List<String>) : ImportUiState()
+}
 
 @HiltViewModel
 class DeckEditorViewModel @Inject constructor(
@@ -17,6 +24,7 @@ class DeckEditorViewModel @Inject constructor(
     private val updateDeck: UpdateDeckUseCase,
     private val deleteDeck: DeleteDeckUseCase,
     private val getDeckCards: GetDeckCardsUseCase,
+    private val getDeckById: GetDeckByIdUseCase,
     private val searchCards: SearchCardsUseCase,
     private val addCardToDeck: AddCardToDeckUseCase,
     private val removeCardUseCase: RemoveCardFromDeckUseCase,
@@ -24,7 +32,8 @@ class DeckEditorViewModel @Inject constructor(
     private val validateDeck: ValidateDeckUseCase,
     private val updateDeckCoverImage: UpdateDeckCoverImageUseCase,
     private val updateCommanderCardId: UpdateCommanderCardIdUseCase,
-    private val getCardById: GetCardByIdUseCase
+    private val getCardById: GetCardByIdUseCase,
+    private val getCardDtoByName: GetCardDtoByNameUseCase
 ) : ViewModel() {
 
     private val _deck = MutableStateFlow<Deck?>(null)
@@ -48,14 +57,19 @@ class DeckEditorViewModel @Inject constructor(
     private val _isPickingCommander = MutableStateFlow(false)
     val isPickingCommander: StateFlow<Boolean> = _isPickingCommander
 
+    private val _importState = MutableStateFlow<ImportUiState>(ImportUiState.Idle)
+    val importState: StateFlow<ImportUiState> = _importState
+
     // ── Deck ops ──────────────────────────────────────────────────────────
 
     fun loadDeck(deck: Deck) {
         _deck.value = deck
-        loadDeckCards(deck.id)
-        // Restore commander from decks.commander_card_id (primary source of truth)
-        deck.commanderCardId?.let { cardId ->
-            viewModelScope.launch {
+        viewModelScope.launch {
+            // Load fresh deck from DB so commanderCardId is always up to date
+            val freshDeck = (getDeckById(deck.id) as? Result.Success)?.data ?: deck
+            _deck.value = freshDeck
+            loadDeckCards(freshDeck.id)
+            freshDeck.commanderCardId?.let { cardId ->
                 val result = getCardById(cardId)
                 if (result is Result.Success) _commander.value = result.data
             }
@@ -178,6 +192,49 @@ class DeckEditorViewModel @Inject constructor(
             loadDeckCards(deckId)
         }
     }
+
+    // ── Import ────────────────────────────────────────────────────────────────
+
+    fun importFromText(text: String) {
+        val deckId = _deck.value?.id ?: return
+        val lines = parseDecklist(text)
+        if (lines.isEmpty()) return
+
+        viewModelScope.launch {
+            _importState.value = ImportUiState.InProgress(0, lines.size)
+            val skipped = mutableListOf<String>()
+            var imported = 0
+
+            for ((qty, name) in lines) {
+                val cardResult = getCardDtoByName(name)
+                if (cardResult is Result.Success) {
+                    addCardToDeck(deckId, cardResult.data, qty)
+                    imported++
+                } else {
+                    skipped.add(name)
+                }
+                _importState.value = ImportUiState.InProgress(imported + skipped.size, lines.size)
+                delay(80)
+            }
+
+            loadDeckCards(deckId)
+            _importState.value = ImportUiState.Complete(imported, skipped)
+        }
+    }
+
+    fun resetImportState() {
+        _importState.value = ImportUiState.Idle
+    }
+
+    private fun parseDecklist(text: String): List<Pair<Int, String>> =
+        text.lines()
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .mapNotNull { line ->
+                Regex("""^(\d+)x?\s+(.+)$""").find(line)?.let {
+                    Pair(it.groupValues[1].toInt(), it.groupValues[2].trim())
+                }
+            }
 
     // ── Validation ────────────────────────────────────────────────────────
 

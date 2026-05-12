@@ -17,7 +17,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val getFeaturedDecks: GetFeaturedDecksUseCase,
     private val getUserDecks: GetUserDecksUseCase,
-    private val logoutUser: LogoutUserUseCase
+    private val logoutUser: LogoutUserUseCase,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _featuredDecks = MutableStateFlow<Result<List<Deck>>>(Result.Loading)
@@ -36,9 +37,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun loadUserDecks(userId: Int) {
+    fun loadUserDecks() {
         viewModelScope.launch {
             _userDecks.value = Result.Loading
+            val userId = authRepository.currentIntUserIdOrRestore()
             _userDecks.value = getUserDecks(userId)
         }
     }

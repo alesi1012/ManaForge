@@ -1,10 +1,12 @@
 package com.example.manaforge
 
+import android.content.Context
 import com.example.manaforge.Api.ScryfallApi
 import com.example.manaforge.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.jan.supabase.SupabaseClient
 import javax.inject.Singleton
@@ -14,7 +16,10 @@ import javax.inject.Singleton
 object RepositoryModule {
 
     @Provides @Singleton
-    fun provideAuthRepository(supabase: SupabaseClient) = AuthRepository(supabase)
+    fun provideAuthRepository(
+        supabase: SupabaseClient,
+        @ApplicationContext context: Context
+    ) = AuthRepository(supabase, context)
 
     @Provides @Singleton
     fun provideDeckRepository(supabase: SupabaseClient) = DeckRepository(supabase)

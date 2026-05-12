@@ -1,5 +1,6 @@
 package com.example.manaforge
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
 import android.widget.Button
@@ -37,6 +38,7 @@ class DeckEditorFragment : Fragment() {
 
     private lateinit var deckCardsAdapter: DeckCardsAdapter
     private lateinit var searchResultsAdapter: SearchResultsAdapter
+    private var importProgressDialog: AlertDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -118,6 +120,10 @@ class DeckEditorFragment : Fragment() {
 
         binding.btnSaveDeck.setOnClickListener {
             findNavController().popBackStack()
+        }
+
+        binding.btnImportDeck.setOnClickListener {
+            showImportDialog()
         }
 
         binding.btnDeleteDeck.setOnClickListener {
@@ -230,6 +236,57 @@ class DeckEditorFragment : Fragment() {
                 }
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.importState.collect { state ->
+                when (state) {
+                    is ImportUiState.InProgress -> {
+                        if (importProgressDialog == null) {
+                            importProgressDialog = AlertDialog.Builder(requireContext())
+                                .setTitle("Importing cards…")
+                                .setMessage("${state.current} / ${state.total}")
+                                .setCancelable(false)
+                                .show()
+                        } else {
+                            importProgressDialog?.setMessage("${state.current} / ${state.total}")
+                        }
+                    }
+                    is ImportUiState.Complete -> {
+                        importProgressDialog?.dismiss()
+                        importProgressDialog = null
+                        val msg = if (state.skipped.isEmpty()) {
+                            "Imported ${state.imported} cards successfully."
+                        } else {
+                            "Imported ${state.imported} cards.\n\nNot found (${state.skipped.size}):\n${state.skipped.joinToString("\n")}"
+                        }
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle("Import Complete")
+                            .setMessage(msg)
+                            .setPositiveButton("OK") { _, _ -> viewModel.resetImportState() }
+                            .show()
+                    }
+                    ImportUiState.Idle -> {
+                        importProgressDialog?.dismiss()
+                        importProgressDialog = null
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showImportDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_import_deck, null)
+        val etDecklist = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etDecklist)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Import Decklist")
+            .setView(dialogView)
+            .setPositiveButton("Import") { _, _ ->
+                val text = etDecklist.text?.toString()?.trim() ?: ""
+                if (text.isNotEmpty()) viewModel.importFromText(text)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroyView() {

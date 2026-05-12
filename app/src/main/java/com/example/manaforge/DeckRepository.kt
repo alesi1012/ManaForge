@@ -8,12 +8,15 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TAG = "ManaForge"
 
 @Singleton
 class DeckRepository @Inject constructor(
@@ -33,7 +36,7 @@ class DeckRepository @Inject constructor(
                     put("user_id", userId)
                     put("name", name)
                     put("format", format.value)
-                })
+                }) { select() }
                 .decodeSingle<DeckDto>()
                 .toDeck()
 
@@ -52,6 +55,7 @@ class DeckRepository @Inject constructor(
 
     suspend fun getDecksByUser(userId: Int): Result<List<Deck>> =
         withContext(Dispatchers.IO) {
+            Log.d(TAG, "getDecksByUser: querying with userId=$userId")
             try {
                 val decks = supabase.postgrest["decks"]
                     .select(Columns.ALL) {
@@ -60,8 +64,10 @@ class DeckRepository @Inject constructor(
                     }
                     .decodeList<DeckDto>()
                     .map { it.toDeck() }
+                Log.d(TAG, "getDecksByUser: got ${decks.size} decks")
                 Result.Success(decks)
             } catch (e: Exception) {
+                Log.e(TAG, "getDecksByUser failed for userId=$userId", e)
                 Result.Error("Could not load decks: ${e.message}", e)
             }
         }
