@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 private const val SUPABASE_URL = "https://vbpgcnnfujslrozmpuop.supabase.co"
-private const val SUPABASE_KEY = "YOUR_PUBLIC_ANON_KEY_HERE"
+private const val SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZicGdjbm5mdWpzbHJvem1wdW9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MzQxMDEsImV4cCI6MjA4MTAxMDEwMX0.wBj7jXsEDp4Ykii3ENI2T90m_6h8dRjL35AEymynxoM"
 private const val SCRYFALL_BASE_URL = "https://api.scryfall.com/"
 
 @Module

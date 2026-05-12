@@ -24,9 +24,6 @@ class LogoutUserUseCase @Inject constructor(private val repo: AuthRepository) {
     suspend operator fun invoke(): Result<Unit> = repo.logout()
 }
 
-// ─────────────────────────────────────────────
-//  Deck use cases
-// ─────────────────────────────────────────────
 
 class CreateDeckUseCase @Inject constructor(private val repo: DeckRepository) {
     suspend operator fun invoke(userId: Int, name: String, format: DeckFormat): Result<Deck> =
@@ -51,9 +48,7 @@ class DeleteDeckUseCase @Inject constructor(private val repo: DeckRepository) {
     suspend operator fun invoke(deckId: Int): Result<Unit> = repo.deleteDeck(deckId)
 }
 
-// ─────────────────────────────────────────────
-//  Card use cases
-// ─────────────────────────────────────────────
+
 
 class SearchCardsUseCase @Inject constructor(private val repo: CardRepository) {
     suspend operator fun invoke(query: String): Result<List<ScryfallCardDto>> =
@@ -68,7 +63,7 @@ class AddCardToDeckUseCase @Inject constructor(
         dto: ScryfallCardDto,
         quantity: Int = 1
     ): Result<DeckCard> {
-        // Ensure card is cached in Supabase
+
         val cardResult = cardRepo.getOrInsertCard(dto)
         if (cardResult is Result.Error) return cardResult
 
@@ -92,9 +87,7 @@ class GetDeckCardsUseCase @Inject constructor(private val repo: CardRepository) 
         repo.getDeckCards(deckId)
 }
 
-// ─────────────────────────────────────────────
-//  Validation use case
-// ─────────────────────────────────────────────
+
 
 class ValidateDeckUseCase @Inject constructor(private val cardRepo: CardRepository) {
     suspend operator fun invoke(deckId: Int, format: DeckFormat): ValidationResult {
@@ -107,9 +100,7 @@ class ValidateDeckUseCase @Inject constructor(private val cardRepo: CardReposito
     }
 }
 
-// ─────────────────────────────────────────────
-//  Stats / Match use cases
-// ─────────────────────────────────────────────
+
 
 class RecordMatchUseCase @Inject constructor(private val repo: MatchRepository) {
     suspend operator fun invoke(match: Match): Result<Match> = repo.recordMatch(match)
