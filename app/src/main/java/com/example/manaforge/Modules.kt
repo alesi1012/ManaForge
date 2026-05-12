@@ -34,7 +34,9 @@ data class Deck(
     val name: String = "",
     val format: DeckFormat = DeckFormat.STANDARD,
     val createdAt: String = "",
-    val updatedAt: String = ""
+    val updatedAt: String = "",
+    val coverImageUrl: String? = null,
+    val commanderCardId: Int? = null
 ) : Parcelable
 
 @Serializable
@@ -44,7 +46,9 @@ data class DeckDto(
     val name: String = "",
     val format: String? = null,
     @SerialName("created_at") val createdAt: String = "",
-    @SerialName("updated_at") val updatedAt: String = ""
+    @SerialName("updated_at") val updatedAt: String = "",
+    @SerialName("cover_image_url") val coverImageUrl: String? = null,
+    @SerialName("commander_card_id") val commanderCardId: Int? = null
 ) {
     fun toDeck() = Deck(
         id = id,
@@ -52,7 +56,9 @@ data class DeckDto(
         name = name,
         format = DeckFormat.from(format ?: "standard"),
         createdAt = createdAt,
-        updatedAt = updatedAt
+        updatedAt = updatedAt,
+        coverImageUrl = coverImageUrl,
+        commanderCardId = commanderCardId
     )
 }
 
@@ -62,7 +68,9 @@ fun Deck.toDto() = DeckDto(
     name = name,
     format = format.value,
     createdAt = createdAt,
-    updatedAt = updatedAt
+    updatedAt = updatedAt,
+    coverImageUrl = coverImageUrl,
+    commanderCardId = commanderCardId
 )
 
 @Parcelize

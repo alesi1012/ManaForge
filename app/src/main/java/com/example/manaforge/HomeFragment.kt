@@ -1,5 +1,6 @@
 package com.example.manaforge
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -47,11 +48,14 @@ class HomeFragment : Fragment() {
         observeState()
 
         viewModel.loadFeaturedDecks()
-        // TODO: pass actual userId from session
         viewModel.loadUserDecks(userId = 1)
 
         binding.fabNewDeck.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_newDeck)
+        }
+
+        binding.btnLogout.setOnClickListener {
+            viewModel.logout()
         }
     }
 
@@ -85,6 +89,17 @@ class HomeFragment : Fragment() {
     }
 
     private fun observeState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.logoutState.collect { result ->
+                if (result is Result.Success) {
+                    val intent = Intent(requireActivity(), AuthActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    requireActivity().finish()
+                }
+            }
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.featuredDecks.collect { result ->
                 when (result) {
@@ -157,7 +172,11 @@ class CarouselAdapter(
         fun bind(deck: Deck) {
             tvName.text = deck.name
             tvFormat.text = deck.format.value.replaceFirstChar { it.uppercase() }
-            // Cover image would be loaded from the card art URL resolved elsewhere
+            if (deck.coverImageUrl != null) {
+                imgCover.load(deck.coverImageUrl) { crossfade(true) }
+            } else {
+                imgCover.setImageDrawable(null)
+            }
             itemView.setOnClickListener { onClick(deck) }
         }
     }
@@ -191,6 +210,7 @@ class DeckListAdapter(
     override fun getItemCount() = items.size
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val imgCover: ImageView = itemView.findViewById(R.id.imgDeckCover)
         private val tvName: TextView = itemView.findViewById(R.id.tvDeckName)
         private val tvFormat: TextView = itemView.findViewById(R.id.tvFormat)
         private val tvUpdated: TextView = itemView.findViewById(R.id.tvUpdatedAt)
@@ -199,6 +219,11 @@ class DeckListAdapter(
             tvName.text = deck.name
             tvFormat.text = deck.format.value.replaceFirstChar { it.uppercase() }
             tvUpdated.text = "Updated: ${deck.updatedAt.take(10)}"
+            if (deck.coverImageUrl != null) {
+                imgCover.load(deck.coverImageUrl) { crossfade(true) }
+            } else {
+                imgCover.setImageDrawable(null)
+            }
             itemView.setOnClickListener { onClick(deck) }
         }
     }

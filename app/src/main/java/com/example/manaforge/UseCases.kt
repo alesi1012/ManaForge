@@ -44,6 +44,21 @@ class UpdateDeckUseCase @Inject constructor(private val repo: DeckRepository) {
         repo.updateDeck(deckId, name, format)
 }
 
+class UpdateDeckCoverImageUseCase @Inject constructor(private val repo: DeckRepository) {
+    suspend operator fun invoke(deckId: Int, imageUrl: String): Result<Unit> =
+        repo.updateCoverImage(deckId, imageUrl)
+}
+
+class UpdateCommanderCardIdUseCase @Inject constructor(private val repo: DeckRepository) {
+    suspend operator fun invoke(deckId: Int, cardId: Int): Result<Unit> =
+        repo.updateCommanderCardId(deckId, cardId)
+}
+
+class GetCardByIdUseCase @Inject constructor(private val repo: CardRepository) {
+    suspend operator fun invoke(cardId: Int): Result<Card> =
+        repo.getCardById(cardId)
+}
+
 class DeleteDeckUseCase @Inject constructor(private val repo: DeckRepository) {
     suspend operator fun invoke(deckId: Int): Result<Unit> = repo.deleteDeck(deckId)
 }

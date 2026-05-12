@@ -12,14 +12,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
         android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/imgDeckCover"
+            android:layout_width="64dp"
+            android:layout_height="90dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Deck cover" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="12dp">
 
             <TextView
                 android:id="@+id/tvDeckName"
@@ -51,15 +58,10 @@
                     android:text="Updated: 2024-01-01"
                     android:textSize="12sp"
                     android:textColor="?attr/colorOnSurfaceVariant" />
+
             </LinearLayout>
 
         </LinearLayout>
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_more"
-            android:contentDescription="Deck options" />
 
     </LinearLayout>
 

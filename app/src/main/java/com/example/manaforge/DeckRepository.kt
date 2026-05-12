@@ -124,6 +124,34 @@ class DeckRepository @Inject constructor(
             }
         }
 
+    // ── Update cover image + commander ────────────────────────────────────
+
+    suspend fun updateCoverImage(deckId: Int, imageUrl: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            try {
+                supabase.postgrest["decks"]
+                    .update(buildJsonObject { put("cover_image_url", imageUrl) }) {
+                        filter { eq("id", deckId) }
+                    }
+                Result.Success(Unit)
+            } catch (e: Exception) {
+                Result.Error("Could not update cover: ${e.message}", e)
+            }
+        }
+
+    suspend fun updateCommanderCardId(deckId: Int, cardId: Int): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            try {
+                supabase.postgrest["decks"]
+                    .update(buildJsonObject { put("commander_card_id", cardId) }) {
+                        filter { eq("id", deckId) }
+                    }
+                Result.Success(Unit)
+            } catch (e: Exception) {
+                Result.Error("Could not save commander: ${e.message}", e)
+            }
+        }
+
     // ── Delete ────────────────────────────────────────────────────────────
 
     suspend fun deleteDeck(deckId: Int): Result<Unit> =

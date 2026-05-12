@@ -21,7 +21,10 @@ class DeckEditorViewModel @Inject constructor(
     private val addCardToDeck: AddCardToDeckUseCase,
     private val removeCardUseCase: RemoveCardFromDeckUseCase,
     private val updateQuantityUseCase: UpdateCardQuantityUseCase,
-    private val validateDeck: ValidateDeckUseCase
+    private val validateDeck: ValidateDeckUseCase,
+    private val updateDeckCoverImage: UpdateDeckCoverImageUseCase,
+    private val updateCommanderCardId: UpdateCommanderCardIdUseCase,
+    private val getCardById: GetCardByIdUseCase
 ) : ViewModel() {
 
     private val _deck = MutableStateFlow<Deck?>(null)
@@ -50,6 +53,13 @@ class DeckEditorViewModel @Inject constructor(
     fun loadDeck(deck: Deck) {
         _deck.value = deck
         loadDeckCards(deck.id)
+        // Restore commander from decks.commander_card_id (primary source of truth)
+        deck.commanderCardId?.let { cardId ->
+            viewModelScope.launch {
+                val result = getCardById(cardId)
+                if (result is Result.Success) _commander.value = result.data
+            }
+        }
     }
 
     fun editDeck(deckId: Int, name: String, format: DeckFormat) {
@@ -86,7 +96,9 @@ class DeckEditorViewModel @Inject constructor(
             _deckCards.value = result
             if (result is Result.Success) {
                 val commanderEntry = result.data.firstOrNull { it.deckCard.isCommander }
-                if (commanderEntry != null) _commander.value = commanderEntry.card
+                if (commanderEntry != null) {
+                    _commander.value = commanderEntry.card
+                }
             }
         }
     }
@@ -136,14 +148,35 @@ class DeckEditorViewModel @Inject constructor(
     }
 
     fun setCommander(dto: ScryfallCardDto) {
+        val imageUrl = dto.resolveImageUrl()
+        // Set eagerly for immediate UI feedback
         _commander.value = Card(
             name = dto.name,
             type = dto.typeLine,
             manaCost = dto.manaCost,
-            imageUrl = dto.resolveImageUrl()
+            imageUrl = imageUrl
         )
         _isPickingCommander.value = false
-        addCard(dto, 1, isCommander = true)
+        val deckId = _deck.value?.id ?: return
+        viewModelScope.launch {
+            // Add card to deck (caches it in Supabase if needed)
+            val deckCardResult = addCardToDeck(deckId, dto, 1, isCommander = true)
+            if (deckCardResult is Result.Error) {
+                _operationState.value = Result.Error(deckCardResult.message)
+                return@launch
+            }
+            val cardId = (deckCardResult as Result.Success).data.cardId
+            // Persist commander in decks table (this is the reliable source of truth)
+            updateCommanderCardId(deckId, cardId)
+            imageUrl?.let { updateDeckCoverImage(deckId, it) }
+            // Fetch full card and update local state
+            val cardResult = getCardById(cardId)
+            if (cardResult is Result.Success) {
+                _commander.value = cardResult.data
+                _deck.value = _deck.value?.copy(commanderCardId = cardId, coverImageUrl = imageUrl)
+            }
+            loadDeckCards(deckId)
+        }
     }
 
     // ── Validation ────────────────────────────────────────────────────────

@@ -121,38 +121,34 @@ class CardRepository @Inject constructor(
                     }
                     .decodeList<DeckCard>()
 
-                if (existing.isNotEmpty()) {
+                val result: DeckCard = if (existing.isNotEmpty()) {
                     val dc = existing.first()
                     val newQty = dc.quantity + quantity
-                    if (isCommander && !dc.isCommander) {
-                        val updated = supabase.postgrest["deck_cards"]
-                            .update(buildJsonObject {
-                                put("quantity", newQty)
-                                put("is_commander", true)
-                            }) {
-                                select()
-                                filter { eq("id", dc.id) }
-                            }
-                            .decodeSingle<DeckCard>()
-                        touchDeckTimestamp(deckId)
-                        return@withContext Result.Success(updated)
-                    }
-                    return@withContext updateCardQuantity(dc.id, newQty)
+                    updateCardQuantity(dc.id, newQty)
+                    dc.copy(quantity = newQty)
+                } else {
+                    val inserted = supabase.postgrest["deck_cards"]
+                        .insert(buildJsonObject {
+                            put("deck_id", deckId)
+                            put("card_id", cardId)
+                            put("quantity", quantity)
+                        }) { select() }
+                        .decodeSingle<DeckCard>()
+                    touchDeckTimestamp(deckId)
+                    inserted
                 }
 
-                val inserted = supabase.postgrest["deck_cards"]
-                    .insert(buildJsonObject {
-                        put("deck_id", deckId)
-                        put("card_id", cardId)
-                        put("quantity", quantity)
-                        if (isCommander) put("is_commander", true)
-                    }) {
-                        select()
-                    }
-                    .decodeSingle<DeckCard>()
+                // Mark as commander if needed — best-effort, column may not exist yet
+                if (isCommander) {
+                    try {
+                        supabase.postgrest["deck_cards"]
+                            .update(buildJsonObject { put("is_commander", true) }) {
+                                filter { eq("id", result.id) }
+                            }
+                    } catch (_: Exception) { }
+                }
 
-                touchDeckTimestamp(deckId)
-                Result.Success(inserted)
+                Result.Success(result)
             } catch (e: Exception) {
                 Result.Error("Could not add card: ${e.message}", e)
             }
@@ -185,7 +181,7 @@ class CardRepository @Inject constructor(
             }
         }
 
-    private suspend fun getCardById(cardId: Int): Result<Card> =
+    suspend fun getCardById(cardId: Int): Result<Card> =
         try {
             val card = supabase.postgrest["cards"]
                 .select(Columns.ALL) {

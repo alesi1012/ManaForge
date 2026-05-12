@@ -16,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getFeaturedDecks: GetFeaturedDecksUseCase,
-    private val getUserDecks: GetUserDecksUseCase
+    private val getUserDecks: GetUserDecksUseCase,
+    private val logoutUser: LogoutUserUseCase
 ) : ViewModel() {
 
     private val _featuredDecks = MutableStateFlow<Result<List<Deck>>>(Result.Loading)
@@ -24,6 +25,9 @@ class HomeViewModel @Inject constructor(
 
     private val _userDecks = MutableStateFlow<Result<List<Deck>>>(Result.Loading)
     val userDecks: StateFlow<Result<List<Deck>>> = _userDecks
+
+    private val _logoutState = MutableStateFlow<Result<Unit>?>(null)
+    val logoutState: StateFlow<Result<Unit>?> = _logoutState
 
     fun loadFeaturedDecks() {
         viewModelScope.launch {
@@ -36,6 +40,13 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _userDecks.value = Result.Loading
             _userDecks.value = getUserDecks(userId)
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            _logoutState.value = Result.Loading
+            _logoutState.value = logoutUser()
         }
     }
 }
