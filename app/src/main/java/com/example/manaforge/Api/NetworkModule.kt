@@ -1,5 +1,6 @@
-package com.example.manaforge.Api
+package com.example.manaforge
 
+import com.example.manaforge.Api.ScryfallApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,18 +17,13 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
-
-
 private const val SUPABASE_URL = "https://vbpgcnnfujslrozmpuop.supabase.co"
 private const val SUPABASE_KEY = "YOUR_PUBLIC_ANON_KEY_HERE"
 private const val SCRYFALL_BASE_URL = "https://api.scryfall.com/"
 
-
-
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
 
     @Provides
     @Singleton
@@ -41,7 +37,6 @@ object NetworkModule {
             install(Realtime)
         }
 
-
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient =
@@ -54,7 +49,6 @@ object NetworkModule {
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .build()
-
 
     @Provides
     @Singleton

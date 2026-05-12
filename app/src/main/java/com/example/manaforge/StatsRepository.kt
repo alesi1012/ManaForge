@@ -1,9 +1,9 @@
 package com.example.manaforge
 
-import com.manaforge.data.models.DeckStats
-import com.manaforge.data.models.Match
-import com.manaforge.data.models.MatchResult
-import com.manaforge.data.models.Result
+import com.example.manaforge.DeckStats
+import com.example.manaforge.Match
+import com.example.manaforge.GameResult
+import com.example.manaforge.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
@@ -44,7 +44,7 @@ class StatsRepository @Inject constructor(
      */
     suspend fun updateAfterMatch(
         deckId: Int,
-        result: MatchResult,
+        result: GameResult,
         damageDealt: Int,
         damageTaken: Int
     ): Result<Unit> = withContext(Dispatchers.IO) {
@@ -54,9 +54,9 @@ class StatsRepository @Inject constructor(
                 .select(Columns.ALL) { filter { eq("deck_id", deckId) } }
                 .decodeSingle<DeckStats>()
 
-            val wins   = current.wins   + if (result == MatchResult.WIN)  1 else 0
-            val losses = current.losses + if (result == MatchResult.LOSS) 1 else 0
-            val draws  = current.draws  + if (result == MatchResult.DRAW) 1 else 0
+            val wins   = current.wins   + if (result == GameResult.WIN)  1 else 0
+            val losses = current.losses + if (result == GameResult.LOSS) 1 else 0
+            val draws  = current.draws  + if (result == GameResult.DRAW) 1 else 0
 
             supabase.postgrest["deck_stats"]
                 .update(
@@ -99,7 +99,7 @@ class MatchRepository @Inject constructor(
                 // Update aggregate stats
                 statsRepository.updateAfterMatch(
                     deckId      = match.deckId,
-                    result      = match.result,
+                    result      = GameResult.from(match.result),
                     damageDealt = match.damageDealt,
                     damageTaken = match.damageTaken
                 )

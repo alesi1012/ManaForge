@@ -1,12 +1,12 @@
 package com.example.manaforge
 
-import com.manaforge.api.ScryfallApi
-import com.manaforge.api.ScryfallCardDto
-import com.manaforge.data.mappers.toCard
-import com.manaforge.data.models.Card
-import com.manaforge.data.models.DeckCard
-import com.manaforge.data.models.DeckCardWithDetails
-import com.manaforge.data.models.Result
+import com.example.manaforge.Api.ScryfallApi
+import com.example.manaforge.Api.ScryfallCardDto
+import com.example.manaforge.toCard
+import com.example.manaforge.Card
+import com.example.manaforge.DeckCard
+import com.example.manaforge.DeckCardWithDetails
+import com.example.manaforge.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
@@ -23,8 +23,6 @@ class CardRepository @Inject constructor(
     private val supabase: SupabaseClient
 ) {
 
-    // ── Scryfall search ────────────────────────────────────────────────────
-
     suspend fun searchScryfall(query: String): Result<List<ScryfallCardDto>> =
         withContext(Dispatchers.IO) {
             try {
@@ -35,22 +33,17 @@ class CardRepository @Inject constructor(
             }
         }
 
-    // ── Get or insert card in Supabase cache ───────────────────────────────
-
     suspend fun getOrInsertCard(dto: ScryfallCardDto): Result<Card> =
         withContext(Dispatchers.IO) {
             try {
-                // Check if already cached by scryfallId
                 val existing = supabase.postgrest["cards"]
                     .select(Columns.ALL) {
                         filter { eq("scryfall_id", dto.id) }
-                        limit(1)
                     }
                     .decodeList<Card>()
 
                 if (existing.isNotEmpty()) return@withContext Result.Success(existing.first())
 
-                // Insert new card
                 val card = dto.toCard()
                 val inserted = supabase.postgrest["cards"]
                     .insert(card)
@@ -62,24 +55,19 @@ class CardRepository @Inject constructor(
             }
         }
 
-    // ── Cards in a deck ────────────────────────────────────────────────────
-
     suspend fun getDeckCards(deckId: Int): Result<List<DeckCardWithDetails>> =
         withContext(Dispatchers.IO) {
             try {
-                // Fetch pivot rows
                 val deckCards = supabase.postgrest["deck_cards"]
                     .select(Columns.ALL) {
                         filter { eq("deck_id", deckId) }
                     }
                     .decodeList<DeckCard>()
 
-                // Fetch card details for each
                 val withDetails = deckCards.mapNotNull { dc ->
                     val cardResult = getCardById(dc.cardId)
-                    if (cardResult is Result.Success) {
-                        DeckCardWithDetails(dc, cardResult.data)
-                    } else null
+                    if (cardResult is Result.Success) DeckCardWithDetails(dc, cardResult.data)
+                    else null
                 }
                 Result.Success(withDetails)
             } catch (e: Exception) {
@@ -87,52 +75,42 @@ class CardRepository @Inject constructor(
             }
         }
 
-    // ── Add card to deck ───────────────────────────────────────────────────
-
-    suspend fun addCardToDeck(
-        deckId: Int,
-        cardId: Int,
-        quantity: Int = 1
-    ): Result<DeckCard> = withContext(Dispatchers.IO) {
-        try {
-            // Check if card already in deck
-            val existing = supabase.postgrest["deck_cards"]
-                .select(Columns.ALL) {
-                    filter {
-                        eq("deck_id", deckId)
-                        eq("card_id", cardId)
+    suspend fun addCardToDeck(deckId: Int, cardId: Int, quantity: Int = 1): Result<DeckCard> =
+        withContext(Dispatchers.IO) {
+            try {
+                val existing = supabase.postgrest["deck_cards"]
+                    .select(Columns.ALL) {
+                        filter {
+                            eq("deck_id", deckId)
+                            eq("card_id", cardId)
+                        }
+                        limit(1)
                     }
-                    limit(1)
+                    .decodeList<DeckCard>()
+
+                if (existing.isNotEmpty()) {
+                    val newQty = existing.first().quantity + quantity
+                    return@withContext updateCardQuantity(existing.first().id, newQty)
                 }
-                .decodeList<DeckCard>()
 
-            if (existing.isNotEmpty()) {
-                // Update quantity
-                val newQty = existing.first().quantity + quantity
-                return@withContext updateCardQuantity(existing.first().id, newQty)
+                val deckCard = DeckCard(deckId = deckId, cardId = cardId, quantity = quantity)
+                val inserted = supabase.postgrest["deck_cards"]
+                    .insert(deckCard)
+                    .decodeSingle<DeckCard>()
+
+                touchDeckTimestamp(deckId)
+                Result.Success(inserted)
+            } catch (e: Exception) {
+                Result.Error("Could not add card: ${e.message}", e)
             }
-
-            val deckCard = DeckCard(deckId = deckId, cardId = cardId, quantity = quantity)
-            val inserted = supabase.postgrest["deck_cards"]
-                .insert(deckCard)
-                .decodeSingle<DeckCard>()
-
-            // Touch deck updated_at
-            touchDeckTimestamp(deckId)
-
-            Result.Success(inserted)
-        } catch (e: Exception) {
-            Result.Error("Could not add card: ${e.message}", e)
         }
-    }
-
-    // ── Update quantity ────────────────────────────────────────────────────
 
     suspend fun updateCardQuantity(deckCardId: Int, quantity: Int): Result<DeckCard> =
         withContext(Dispatchers.IO) {
             try {
                 val updated = supabase.postgrest["deck_cards"]
                     .update(buildJsonObject { put("quantity", quantity) }) {
+                        select()
                         filter { eq("id", deckCardId) }
                     }
                     .decodeSingle<DeckCard>()
@@ -141,8 +119,6 @@ class CardRepository @Inject constructor(
                 Result.Error("Could not update quantity: ${e.message}", e)
             }
         }
-
-    // ── Remove card from deck ──────────────────────────────────────────────
 
     suspend fun removeCardFromDeck(deckCardId: Int): Result<Unit> =
         withContext(Dispatchers.IO) {
@@ -155,8 +131,6 @@ class CardRepository @Inject constructor(
                 Result.Error("Could not remove card: ${e.message}", e)
             }
         }
-
-    // ── Private helpers ────────────────────────────────────────────────────
 
     private suspend fun getCardById(cardId: Int): Result<Card> =
         try {
@@ -176,6 +150,6 @@ class CardRepository @Inject constructor(
                 .update(buildJsonObject { put("updated_at", "now()") }) {
                     filter { eq("id", deckId) }
                 }
-        } catch (_: Exception) { /* non-critical */ }
+        } catch (_: Exception) { }
     }
 }

@@ -3,10 +3,10 @@ package com.example.manaforge
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.manaforge.data.models.Deck
-import com.manaforge.data.models.Result
-import com.manaforge.domain.usecases.GetFeaturedDecksUseCase
-import com.manaforge.domain.usecases.GetUserDecksUseCase
+import com.example.manaforge.Deck
+import com.example.manaforge.Result
+import com.example.manaforge.GetFeaturedDecksUseCase
+import com.example.manaforge.GetUserDecksUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -2,9 +2,9 @@ package com.example.manaforge
 
 
 
-import com.manaforge.data.models.Card
-import com.manaforge.data.models.DeckCardWithDetails
-import com.manaforge.data.models.DeckFormat
+import com.example.manaforge.Card
+import com.example.manaforge.DeckCardWithDetails
+import com.example.manaforge.DeckFormat
 
 // ─────────────────────────────────────────────
 //  Validation result types

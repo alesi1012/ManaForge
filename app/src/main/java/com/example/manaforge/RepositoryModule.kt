@@ -1,7 +1,7 @@
 package com.example.manaforge
 
-import com.manaforge.api.ScryfallApi
-import com.manaforge.data.repositories.*
+import com.example.manaforge.Api.ScryfallApi
+import com.example.manaforge.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

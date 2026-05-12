@@ -2,10 +2,10 @@ package com.example.manaforge
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.manaforge.api.ScryfallCardDto
-import com.manaforge.data.models.*
-import com.manaforge.domain.usecases.*
-import com.manaforge.domain.validators.ValidationResult
+import com.example.manaforge.Api.ScryfallCardDto
+import com.example.manaforge.*
+import com.example.manaforge.*
+import com.example.manaforge.ValidationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

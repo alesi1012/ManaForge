@@ -5,10 +5,10 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
-import com.manaforge.R
-import com.manaforge.data.repositories.AuthRepository
-import com.manaforge.databinding.ActivityMainBinding
-import com.manaforge.ui.auth.AuthActivity
+import com.example.manaforge.R
+import com.example.manaforge.AuthRepository
+import com.example.manaforge.databinding.ActivityMainBinding
+import com.example.manaforge.AuthActivity
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

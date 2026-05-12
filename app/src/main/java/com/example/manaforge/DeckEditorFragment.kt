@@ -10,16 +10,19 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.recyclerview.widget.*
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.manaforge.R
-import com.manaforge.api.ScryfallCardDto
-import com.manaforge.api.resolveImageUrl
-import com.manaforge.data.models.*
-import com.manaforge.databinding.FragmentDeckEditorBinding
+import com.example.manaforge.R
+import com.example.manaforge.Api.ScryfallCardDto
+import com.example.manaforge.Api.resolveImageUrl
+import com.example.manaforge.*
+import com.example.manaforge.databinding.FragmentDeckEditorBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 

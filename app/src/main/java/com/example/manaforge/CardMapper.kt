@@ -1,9 +1,9 @@
 package com.example.manaforge
 
-import com.manaforge.api.ScryfallCardDto
-import com.manaforge.api.resolveArtCropUrl
-import com.manaforge.api.resolveImageUrl
-import com.manaforge.data.models.Card
+import com.example.manaforge.Api.ScryfallCardDto
+import com.example.manaforge.Api.resolveArtCropUrl
+import com.example.manaforge.Api.resolveImageUrl
+import com.example.manaforge.Card
 
 /**
  * Maps a Scryfall API DTO to the internal [Card] domain model.

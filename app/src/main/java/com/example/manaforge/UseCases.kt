@@ -2,16 +2,13 @@ package com.example.manaforge
 
 
 
-import com.manaforge.api.ScryfallCardDto
-import com.manaforge.data.models.*
-import com.manaforge.data.repositories.*
+import com.example.manaforge.Api.ScryfallCardDto
+import com.example.manaforge.*
 import com.example.manaforge.DeckValidator
 import com.example.manaforge.ValidationResult
 import javax.inject.Inject
 
-// ─────────────────────────────────────────────
-//  Auth use cases
-// ─────────────────────────────────────────────
+
 
 class RegisterUserUseCase @Inject constructor(private val repo: AuthRepository) {
     suspend operator fun invoke(username: String, email: String, password: String): Result<User> =

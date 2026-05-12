@@ -11,12 +11,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
-import com.manaforge.data.models.Result
-import com.manaforge.data.models.User
-import com.manaforge.databinding.ActivityAuthBinding
-import com.manaforge.domain.usecases.LoginUserUseCase
-import com.manaforge.domain.usecases.RegisterUserUseCase
-import com.manaforge.ui.MainActivity
+import com.example.manaforge.Result
+import com.example.manaforge.User
+import com.example.manaforge.databinding.ActivityAuthBinding
+import com.example.manaforge.LoginUserUseCase
+import com.example.manaforge.RegisterUserUseCase
+import com.example.manaforge.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,9 +52,6 @@ class AuthViewModel @Inject constructor(
     }
 }
 
-// ─────────────────────────────────────────────
-//  Activity
-// ─────────────────────────────────────────────
 
 @AndroidEntryPoint
 class AuthActivity : AppCompatActivity() {

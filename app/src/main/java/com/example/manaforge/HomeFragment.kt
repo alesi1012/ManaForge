@@ -15,10 +15,10 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import coil.load
 import com.google.android.material.tabs.TabLayoutMediator
-import com.manaforge.R
-import com.manaforge.data.models.Deck
-import com.manaforge.data.models.Result
-import com.manaforge.databinding.FragmentHomeBinding
+import com.example.manaforge.R
+import com.example.manaforge.Deck
+import com.example.manaforge.Result
+import com.example.manaforge.databinding.FragmentHomeBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 

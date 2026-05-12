@@ -1,8 +1,7 @@
 package com.example.manaforge
 
-
-import com.manaforge.data.models.Result
-import com.manaforge.data.models.User
+import com.example.manaforge.Result
+import com.example.manaforge.User
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
@@ -19,26 +18,17 @@ class AuthRepository @Inject constructor(
     private val supabase: SupabaseClient
 ) {
 
-    // ── Register ──────────────────────────────────────────────────────────
-
-    /**
-     * Registers a new user.
-     * 1. Creates an Auth user via Supabase Auth.
-     * 2. Inserts a row in the public `users` table with hashed password.
-     */
     suspend fun register(
         username: String,
         email: String,
         password: String
     ): Result<User> = withContext(Dispatchers.IO) {
         try {
-            // 1 – Auth sign-up
             supabase.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
             }
 
-            // 2 – Insert public profile
             val user = User(
                 username = username,
                 email = email,
@@ -54,8 +44,6 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    // ── Login ─────────────────────────────────────────────────────────────
-
     suspend fun login(email: String, password: String): Result<User> =
         withContext(Dispatchers.IO) {
             try {
@@ -64,19 +52,18 @@ class AuthRepository @Inject constructor(
                     this.password = password
                 }
 
-                val user = supabase.postgrest["users"]
-                    .select(Columns.ALL) {
-                        filter { eq("email", email) }
-                    }
-                    .decodeSingle<User>()
+                val currentUser = supabase.auth.currentSessionOrNull()?.user
+                val user = User(
+                    id = 0,
+                    username = currentUser?.email ?: "",
+                    email = currentUser?.email ?: ""
+                )
 
                 Result.Success(user)
             } catch (e: Exception) {
                 Result.Error("Login failed: ${e.message}", e)
             }
         }
-
-    // ── Logout ────────────────────────────────────────────────────────────
 
     suspend fun logout(): Result<Unit> = withContext(Dispatchers.IO) {
         try {
@@ -87,15 +74,11 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    // ── Current session ───────────────────────────────────────────────────
-
     fun isLoggedIn(): Boolean =
         supabase.auth.currentSessionOrNull() != null
 
     fun currentUserId(): String? =
         supabase.auth.currentSessionOrNull()?.user?.id
-
-    // ── Helpers ───────────────────────────────────────────────────────────
 
     private fun hashPassword(password: String): String {
         val bytes = MessageDigest

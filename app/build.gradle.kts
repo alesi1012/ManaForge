@@ -1,21 +1,29 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.ksp)
+    id("kotlin-parcelize")
 }
 
 android {
-    namespace = "com.manaforge"
+    namespace = "com.example.manaforge"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.manaforge"
+        applicationId = "com.example.manaforge"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            force("androidx.browser:browser:1.8.0")
+        }
     }
 
     buildFeatures {
@@ -34,7 +42,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -47,7 +54,7 @@ dependencies {
     implementation(libs.navigation.ui.ktx)
 
     implementation(libs.hilt.android)
-    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
+    ksp(libs.hilt.compiler)
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
@@ -55,11 +62,21 @@ dependencies {
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    kapt("androidx.room:room-compiler:2.6.1")
+    ksp(libs.room.compiler)
 
     implementation(libs.coroutines.android)
-
     implementation(libs.serialization.json)
 
+
+    implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.auth)
+    implementation(libs.supabase.realtime)
+    implementation(libs.ktor.android)
+
+    implementation(libs.androidx.browser)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.viewpager2)
+    implementation(libs.recyclerview)
+    implementation(libs.swiperefresh)
     implementation(libs.coil)
 }

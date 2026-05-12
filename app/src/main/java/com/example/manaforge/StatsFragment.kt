@@ -10,12 +10,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.navArgs
-import androidx.recyclerview.widget.*
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.manaforge.R
-import com.manaforge.data.models.*
-import com.manaforge.databinding.FragmentStatsBinding
-import com.manaforge.domain.usecases.*
+import com.example.manaforge.R
+import com.example.manaforge.*
+import com.example.manaforge.databinding.FragmentStatsBinding
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +55,7 @@ class StatsViewModel @Inject constructor(
     fun logMatch(
         deckId: Int,
         opponentName: String,
-        result: MatchResult,
+        result: GameResult,
         damageDealt: Int,
         damageTaken: Int,
         turns: Int
@@ -62,7 +64,7 @@ class StatsViewModel @Inject constructor(
             val match = Match(
                 deckId = deckId,
                 opponentName = opponentName,
-                result = result,
+                result = result.value,
                 damageDealt = damageDealt,
                 damageTaken = damageTaken,
                 turnsPlayed = turns
@@ -127,9 +129,9 @@ class StatsFragment : Fragment() {
             .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
                 val result = when (spinnerResult.selectedItemPosition) {
-                    0 -> MatchResult.WIN
-                    1 -> MatchResult.LOSS
-                    else -> MatchResult.DRAW
+                    0 -> GameResult.WIN
+                    1 -> GameResult.LOSS
+                    else -> GameResult.DRAW
                 }
                 viewModel.logMatch(
                     deckId = args.deckId,
@@ -199,13 +201,13 @@ class MatchesAdapter : ListAdapter<Match, MatchesAdapter.VH>(DIFF) {
 
         fun bind(match: Match) {
             tvOpponent.text = "vs ${match.opponentName}"
-            tvResult.text = match.result.value.replaceFirstChar { it.uppercase() }
+            tvResult.text = match.result.replaceFirstChar { it.uppercase() }
             tvResult.setTextColor(
                 itemView.context.getColor(
-                    when (match.result) {
-                        MatchResult.WIN  -> R.color.win_green
-                        MatchResult.LOSS -> R.color.loss_red
-                        MatchResult.DRAW -> R.color.draw_yellow
+                    when (GameResult.from(match.result)) {
+                        GameResult.WIN  -> R.color.win_green
+                        GameResult.LOSS -> R.color.loss_red
+                        GameResult.DRAW -> R.color.draw_yellow
                     }
                 )
             )

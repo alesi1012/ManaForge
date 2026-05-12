@@ -30,9 +30,9 @@
         tools:layout="@layout/fragment_deck_editor">
         <argument
             android:name="deck"
-            app:argType="com.manaforge.data.models.Deck"
+            app:argType="com.example.manaforge.Deck"
             app:nullable="true"
-            android:defaultValue="@null" />
+            android:defaultValue="@null"/>
         <action
             android:id="@+id/action_editor_to_stats"
             app:destination="@id/statsFragment" />

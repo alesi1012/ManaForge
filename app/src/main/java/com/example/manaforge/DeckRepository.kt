@@ -1,9 +1,9 @@
 package com.example.manaforge
 
 
-import com.manaforge.data.models.Deck
-import com.manaforge.data.models.DeckFormat
-import com.manaforge.data.models.Result
+import com.example.manaforge.Deck
+import com.example.manaforge.DeckFormat
+import com.example.manaforge.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
