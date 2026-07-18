@@ -148,6 +148,35 @@ enum class GameResult(val value: String) {
     }
 }
 
+@Serializable
+data class CollectionCard(
+    val id: Int = 0,
+    @SerialName("user_id") val userId: Int = 0,
+    @SerialName("card_id") val cardId: Int = 0,
+    val quantity: Int = 1,
+    val foil: Boolean = false,
+    val condition: String = "NM",
+    val language: String = "en",
+    @SerialName("created_at") val createdAt: String = ""
+)
+
+data class CollectionCardWithDetails(
+    val collectionCard: CollectionCard,
+    val card: Card
+)
+
+enum class CardCondition(val label: String) {
+    NM("NM"),
+    LP("LP"),
+    MP("MP"),
+    HP("HP"),
+    DMG("DMG");
+
+    companion object {
+        fun labels() = entries.map { it.label }.toTypedArray()
+    }
+}
+
 sealed class Result<out T> {
     data class Success<T>(val data: T) : Result<T>()
     data class Error(val message: String, val cause: Throwable? = null) : Result<Nothing>()

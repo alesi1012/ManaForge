@@ -34,4 +34,8 @@ object RepositoryModule {
     @Provides @Singleton
     fun provideMatchRepository(supabase: SupabaseClient, stats: StatsRepository) =
         MatchRepository(supabase, stats)
+
+    @Provides @Singleton
+    fun provideCollectionRepository(supabase: SupabaseClient, cards: CardRepository) =
+        CollectionRepository(supabase, cards)
 }

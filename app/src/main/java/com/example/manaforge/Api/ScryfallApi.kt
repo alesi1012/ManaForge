@@ -31,6 +31,15 @@ interface ScryfallApi {
         "User-Agent: ManaForge/1.0",
         "Accept: application/json"
     )
+    @GET("cards/named")
+    suspend fun getCardByFuzzyName(
+        @Query("fuzzy") name: String
+    ): ScryfallCardDto
+
+    @Headers(
+        "User-Agent: ManaForge/1.0",
+        "Accept: application/json"
+    )
     @GET("cards/search")
     suspend fun searchCommanders(
         @Query("q") query: String = "is:commander",
@@ -59,7 +68,13 @@ data class ScryfallCardDto(
     @SerializedName("set_name") val setName: String?,
     @SerializedName("image_uris") val imageUris: ImageUrisDto?,
     @SerializedName("card_faces") val cardFaces: List<CardFaceDto>?,
-    @SerializedName("legalities") val legalities: LegalitiesDto?
+    @SerializedName("legalities") val legalities: LegalitiesDto?,
+    @SerializedName("prices") val prices: PricesDto?
+)
+
+data class PricesDto(
+    @SerializedName("usd") val usd: String?,
+    @SerializedName("usd_foil") val usdFoil: String?
 )
 
 data class ImageUrisDto(

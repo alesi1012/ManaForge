@@ -79,4 +79,12 @@ dependencies {
     implementation(libs.recyclerview)
     implementation(libs.swiperefresh)
     implementation(libs.coil)
+
+    implementation(libs.camerax.core)
+    implementation(libs.camerax.camera2)
+    implementation(libs.camerax.lifecycle)
+    implementation(libs.camerax.view)
+    implementation(libs.mlkit.textrecognition)
+
+    testImplementation(kotlin("test"))
 }

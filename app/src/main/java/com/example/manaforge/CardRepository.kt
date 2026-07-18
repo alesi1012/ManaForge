@@ -43,6 +43,15 @@ class CardRepository @Inject constructor(
             }
         }
 
+    suspend fun getCardDtoByFuzzyName(name: String): Result<ScryfallCardDto> =
+        withContext(Dispatchers.IO) {
+            try {
+                Result.Success(scryfallApi.getCardByFuzzyName(name))
+            } catch (e: Exception) {
+                Result.Error("Fuzzy search failed: ${e.message}", e)
+            }
+        }
+
     suspend fun getOrInsertCard(dto: ScryfallCardDto): Result<Card> =
         withContext(Dispatchers.IO) {
             try {

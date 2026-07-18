@@ -12,4 +12,8 @@
         android:id="@+id/lifeCounterFragment"
         android:icon="@android:drawable/ic_menu_my_calendar"
         android:title="Counter" />
+    <item
+        android:id="@+id/collectionFragment"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="Collection" />
 </menu>

@@ -54,6 +54,10 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.action_home_to_newDeck)
         }
 
+        binding.btnGoToCollection.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_collection)
+        }
+
         binding.btnLogout.setOnClickListener {
             viewModel.logout()
         }

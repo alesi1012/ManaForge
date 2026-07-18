@@ -20,6 +20,9 @@
                 android:name="deck"
                 app:argType="com.example.manaforge.Deck" />
         </action>
+        <action
+            android:id="@+id/action_home_to_collection"
+            app:destination="@id/collectionFragment" />
     </fragment>
 
     <fragment
@@ -53,5 +56,35 @@
         android:name="com.example.manaforge.LifeCounterFragment"
         android:label="Counter"
         tools:layout="@layout/fragment_life_counter" />
+
+    <fragment
+        android:id="@+id/collectionFragment"
+        android:name="com.example.manaforge.CollectionFragment"
+        android:label="My Collection"
+        tools:layout="@layout/fragment_collection">
+        <action
+            android:id="@+id/action_collection_to_camera"
+            app:destination="@id/cameraFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="com.example.manaforge.CameraFragment"
+        android:label="Scan Card"
+        tools:layout="@layout/fragment_camera">
+        <action
+            android:id="@+id/action_camera_to_scanResult"
+            app:destination="@id/scanResultFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/scanResultFragment"
+        android:name="com.example.manaforge.ScanResultFragment"
+        android:label="Scan Result"
+        tools:layout="@layout/fragment_scan_result">
+        <argument
+            android:name="imagePath"
+            app:argType="string" />
+    </fragment>
 
 </navigation>
