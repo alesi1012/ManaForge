@@ -23,10 +23,10 @@
                 android:id="@+id/btnBack"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/ic_arrow_back"
+                android:layout_marginEnd="4dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Back"
-                android:layout_marginEnd="4dp" />
+                android:src="@drawable/ic_arrow_back" />
 
             <TextView
                 android:layout_width="0dp"
@@ -38,17 +38,17 @@
 
         </LinearLayout>
 
-        <!-- Captured image -->
+        <!-- Imagen escaneada -->
         <ImageView
             android:id="@+id/imgCapture"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:background="@android:color/black" />
+            android:background="@android:color/black"
+            android:scaleType="fitCenter" />
 
-        <!-- Result card -->
+        <!-- Resultado del OCR -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -62,49 +62,56 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tvResultTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Analyzing card…"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="4dp" />
 
-                <TextView
-                    android:id="@+id/tvResultSubtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="OCR identification available in the next update."
-                    android:textSize="13sp"
-                    android:alpha="0.6" />
-
+                <!-- ProgressBar -->
                 <ProgressBar
                     android:id="@+id/progressOcr"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:visibility="visible" />
+
+                <!-- Título -->
+                <TextView
+                    android:id="@+id/tvResultTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:visibility="gone" />
+                    android:gravity="center"
+                    android:text="Analizando carta..."
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Subtítulo -->
+                <TextView
+                    android:id="@+id/tvResultSubtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:text="Estamos intentando reconocer la carta."
+                    android:textSize="14sp"
+                    android:alpha="0.7" />
 
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Action buttons -->
+        <!-- Botones -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="end"
             android:orientation="horizontal"
-            android:padding="12dp"
-            android:gravity="end">
+            android:padding="12dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRetake"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Retake"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="8dp"
+                android:text="Retake" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAddManually"

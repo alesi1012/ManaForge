@@ -32,39 +32,76 @@ class ScanViewModel @Inject constructor(
 
     fun processImage(imagePath: String) {
         viewModelScope.launch {
-            _scanState.value = ScanState.Processing
-
-            val ocrResult = ocrProcessor.extractText(imagePath)
-            if (ocrResult is Result.Error) {
-                _scanState.value = ScanState.Error(ocrResult.message)
-                return@launch
-            }
-
-            val rawText = (ocrResult as Result.Success).data
-            val cardName = extractCardName(rawText)
-
-            if (cardName.isBlank()) {
-                _scanState.value = ScanState.Error("No text detected. Ensure the card is well-lit and in focus.")
-                return@launch
-            }
 
             _scanState.value = ScanState.Processing
 
-            // Try fuzzy match first (handles small OCR errors)
-            val fuzzyResult = cardRepository.getCardDtoByFuzzyName(cardName)
-            if (fuzzyResult is Result.Success) {
-                _scanState.value = ScanState.Success(cardName, fuzzyResult.data)
-                return@launch
-            }
+            when (val ocrResult = ocrProcessor.extractLines(imagePath)) {
 
-            // Fall back to broad search
-            val searchResult = cardRepository.searchScryfall(cardName)
-            val firstCard = (searchResult as? Result.Success)?.data?.firstOrNull()
+                is Result.Error -> {
 
-            _scanState.value = if (firstCard != null) {
-                ScanState.Success(cardName, firstCard)
-            } else {
-                ScanState.NotFound(cardName)
+                    _scanState.value =
+                        ScanState.Error(ocrResult.message)
+
+                }
+
+                is Result.Success -> {
+
+                    val cardName =
+                        ocrProcessor.extractCardName(ocrResult.data)
+
+                    if (cardName.isNullOrBlank()) {
+
+                        _scanState.value = ScanState.Error(
+                            "No se ha podido reconocer la carta."
+                        )
+
+                        return@launch
+                    }
+
+                    // Intentamos buscar la carta con fuzzy search
+                    val fuzzyResult =
+                        cardRepository.getCardDtoByFuzzyName(cardName)
+
+                    if (fuzzyResult is Result.Success) {
+
+                        _scanState.value =
+                            ScanState.Success(
+                                cardName,
+                                fuzzyResult.data
+                            )
+
+                        return@launch
+                    }
+
+                    // Si falla, hacemos una búsqueda normal
+                    val searchResult =
+                        cardRepository.searchScryfall(cardName)
+
+                    val firstCard =
+                        (searchResult as? Result.Success)
+                            ?.data
+                            ?.firstOrNull()
+
+                    _scanState.value =
+                        if (firstCard != null) {
+
+                            ScanState.Success(
+                                cardName,
+                                firstCard
+                            )
+
+                        } else {
+
+                            ScanState.NotFound(cardName)
+                        }
+                }
+
+                Result.Loading -> {
+
+                    _scanState.value =
+                        ScanState.Processing
+
+                }
             }
         }
     }

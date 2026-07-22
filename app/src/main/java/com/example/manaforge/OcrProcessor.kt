@@ -17,15 +17,46 @@ import javax.inject.Singleton
 class OcrProcessor @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
-    suspend fun extractText(imagePath: String): Result<String> = withContext(Dispatchers.IO) {
-        try {
-            val inputImage = InputImage.fromFilePath(context, Uri.fromFile(File(imagePath)))
-            val visionText = Tasks.await(recognizer.process(inputImage))
-            Result.Success(visionText.text)
-        } catch (e: Exception) {
-            Result.Error("OCR failed: ${e.message}", e)
+    private val recognizer =
+        TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+    suspend fun extractLines(imagePath: String): Result<List<String>> =
+        withContext(Dispatchers.IO) {
+
+            try {
+                val image = InputImage.fromFilePath(
+                    context,
+                    Uri.fromFile(File(imagePath))
+                )
+
+                val visionText = Tasks.await(recognizer.process(image))
+
+                val lines = visionText.textBlocks.flatMap { block ->
+                    block.lines.map { line ->
+                        line.text.trim()
+                    }
+                }.filter {
+                    it.isNotBlank()
+                }
+
+                Result.Success(lines)
+
+            } catch (e: Exception) {
+                Result.Error(
+                    "Error al procesar la imagen: ${e.message}",
+                    e
+                )
+            }
         }
+
+
+    fun extractCardName(lines: List<String>): String? {
+
+        if (lines.isEmpty()) {
+            return null
+        }
+
+        return lines.first()
     }
 }
